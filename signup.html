@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<title>Signup</title>
+		<script src="//www.parsecdn.com/js/parse-1.6.12.min.js"></script>
+		<script type="text/javascript">
+
+/***********************************************
+* Drop Down Date select script- by JavaScriptKit.com
+* This notice MUST stay intact for use
+* Visit JavaScript Kit at http://www.javascriptkit.com/ for this script and more
+***********************************************/
+
+var monthtext=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function populatedropdown(dayfield, monthfield, yearfield){
+var today=new Date()
+var dayfield=document.getElementById(dayfield)
+var monthfield=document.getElementById(monthfield)
+var yearfield=document.getElementById(yearfield)
+for (var i=1; i<32; i++)
+dayfield.options[i-1]=new Option(i, i+1)
+dayfield.options[today.getDate()]=new Option(today.getDate(), today.getDate(), true, true) //select today's day
+for (var m=0; m<12; m++)
+monthfield.options[m]=new Option(monthtext[m], monthtext[m])
+monthfield.options[today.getMonth()]=new Option(monthtext[today.getMonth()], monthtext[today.getMonth()], true, true) //select today's month
+var thisyear=today.getFullYear()
+for (var y=0; y<100; y++){
+yearfield.options[y]=new Option(thisyear-y, thisyear-y)
+
+}
+yearfield.options[0]=new Option(today.getFullYear(), today.getFullYear(), true, true) //select today's year
+}
+
+</script>
+			<!-- Load style sheet -->
+		<link href="signup.css" media="screen" rel="stylesheet" type="text/css">
+
+	<!-- Library code -->
+
+		 	<!-- Load socket.io client side contents. -->
+		<script src="/socket.io/socket.io.js"></script>
+
+
+	 		<!-- Load the GUI rendering library code. -->
+		<script type="text/javascript" src="lib/dat.gui.min.js"></script>
+			<!-- Load the keyboard specific code -->
+		<script type="text/javascript" src="lib/keyboard.js"></script>
+
+
+	</head>
+
+	<body>
+
+<div id = "signDiv" class="signupDiv">
+
+<form>
+Username<br>
+<input type="text" id= "user"  class="inputBox">
+<br>
+<br>
+Password<br>
+<input type="password" id="pass" class="inputBox">
+<br>
+<br>
+Confirm Password<br>
+<input type="password" id="cpass"  class="inputBox">
+<br>
+<br>
+Email<br>
+<input type="text" id="email"  class="inputBox">
+<br>
+<br>
+Date of Birth
+<br>
+<form action="" name="someform">
+
+<select id="monthdropdown" class="dateBox">
+</select>
+<select id="daydropdown" class="dateBox">
+</select>
+<select id="yeardropdown" class="dateBox">
+</select>
+</form>
+<br>
+<div id="playsub" onclick="javascript:userSub()"></div>
+
+</form>
+</div>
+<script type="text/javascript">
+
+//populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select)
+window.onload=function(){
+populatedropdown("daydropdown", "monthdropdown", "yeardropdown")
+}
+</script>
+<script>
+var socket = io.connect();
+function userSub(){
+var bdate = (document.getElementById('monthdropdown').selectedIndex+1).toString() + "-" + (document.getElementById('daydropdown').selectedIndex+1).toString() + "-" + (2015 - document.getElementById('yeardropdown').selectedIndex).toString();
+socket.emit('signup', {"username": document.getElementById('user').value, "password": document.getElementById('pass').value, "email": document.getElementById('email').value, "bdate": bdate});
+
+}
+</script>
+	</body>
+
+</html>

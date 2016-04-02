@@ -1,0 +1,67 @@
+html , body {
+	background: #efefef;
+	color: #fff;
+	font-family: Helvetica;
+	margin: 0;
+	padding: 0;
+	overflow:hidden;
+}
+a {
+   text-decoration: none;
+}
+a:hover {
+   text-decoration: underline;
+}
+@font-face { font-family: Bit; src: url('fonts/Roboto-Regular.ttf'); }
+
+#playsub{
+  background-image: url('assets/playforfree0.png');
+  height: 64px;
+  width: 360px;
+}
+
+#playsub:hover{
+
+  background-image: url('assets/playforfree.png');
+}
+.signupDiv{
+font-family: Bit;
+font-size: 15px;
+position: absolute;
+top:17%;
+left:70%;
+padding: 20px;
+color: #242424;
+line-height: 170%;
+
+}
+.inputBox {
+		height: 25px;
+    width: 360px;
+		font-size: 20px;
+		font-family: Bit;
+		padding-left: 5px;
+		padding-top: 2px;
+		padding-bottom: 2px;
+		margin-bottom: 5px;
+}
+.dateBox{
+  height: 25px;
+  width: 120px;
+  font-size: 15px;
+  font-family: Bit;
+  padding-left: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin-bottom: 5px;
+}
+.passBox {
+		height: 25px;
+    width: 360px;
+		font-size: 20px;
+		font-family: Bit;
+		padding-left: 5px;
+		padding-top: 2px;
+		padding-bottom: 2px;
+		margin-bottom: 5px;
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<title>projectzero</title>
+		<script type="text/javascript" src="phaser.js"></script>
+		<script src="//www.parsecdn.com/js/parse-1.6.12.min.js"></script>
+			<!-- Load style sheet -->
+		<link href="index.css" media="screen" rel="stylesheet" type="text/css">
+
+	<!-- Library code -->
+
+		 	<!-- Load socket.io client side contents. -->
+		<script src="/socket.io/socket.io.js"></script>
+
+
+	 		<!-- Load the GUI rendering library code. -->
+		<script type="text/javascript" src="lib/dat.gui.min.js"></script>
+			<!-- Load the keyboard specific code -->
+		<script type="text/javascript" src="lib/keyboard.js"></script>
+
+	<!-- Game code -->
+
+	 		<!-- Load the common game code. -->
+		<!-- script type="text/javascript" src="game.core.js"></script>
+			<!-- Finally, Load the game client code. -->
+<script type="text/javascript" src="js/logload.js"></script>
+<script type="text/javascript" src="js/name.js"></script>
+<script type="text/javascript" src="js/loader.js"></script>
+<script type="text/javascript" src="js/load.js"></script>
+<script type="text/javascript" src="js/menu.js"></script>
+<script type="text/javascript" src="js/game.js"></script>
+<script type="text/javascript" src="js/client.js"></script>
+
+	</head>
+
+	<body>
+		<script type="text/javascript">
+				//This is all that needs
+			var socket = io.connect('/');
+				//Now we can listen for that event
+			socket.on('onconnected', function( data ) {
+					//Note that the data is the object we sent from the server, as is. So we can assume its id exists.
+		  		console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
+		  	});
+		</script>
+<div id = "thelog">
+<div class = "accLog">
+Account Login
+</div>
+<div id = "loginDiv" class="overlay">
+<form>
+Username<br>
+<input type="text" id= "user" name="firstname" class="inputBox">
+<br>
+Password<br>
+<input type="password" id="pass" name="lastname" class="inputBox">
+</form>
+</div>
+<div id = "accHelp" class="accountHelp">
+<a href="signup.html" target="_blank">Don't have an account? Sign up now!</a>
+</div>
+</div>
+<div id = "newacc">
+<form>
+<input type="text" maxlength="16" id= "newac" name="newname" class="inputBox">
+</form>
+<br>
+</div>
+		<div id ="gameWin"></div>
+	</body>
+
+</html>
