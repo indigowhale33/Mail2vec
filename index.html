@@ -18,6 +18,7 @@
 		<script type="text/javascript" src="lib/dat.gui.min.js"></script>
 			<!-- Load the keyboard specific code -->
 		<script type="text/javascript" src="lib/keyboard.js"></script>
+		
 
 	<!-- Game code -->
 
@@ -44,6 +45,12 @@
 		  		console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
 		  	});
 		</script>
+		<form action="/authorize">
+			<input type="submit" value="login"></form>
+<script>
+function doorClicked(){
+    socket.emit('door');}
+</script>
 <div id = "thelog">
 <div class = "accLog">
 Account Login

@@ -21,22 +21,29 @@
         server          = http.createServer(app);
         clients = [];
         query = new Parse.Query(Parse.User);
+        var urllib = require('url');
+
 
     var google = require('googleapis');
+    var coffeescript = require('iced-coffee-script/register');
+    var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+    var gapi = require('gapi');
     var OAuth2 = google.auth.OAuth2;
-
+    var request = require('request');
     var fs = require('fs');
   var readline = require('readline');
   var googleAuth = require('google-auth-library');
     //oogle.options({ auth: oauth2Client });
-    
+    app.use(express.bodyParser());
     var REDIRECT_URL = 'http://www.mailcat.com/oauth2callback&';
     var CLIENT_ID = '72348150251-lf1jm1l7ordsvvniqt4slgqrsp8qo4jg.apps.googleusercontent.com';
     var CLIENT_SECRET = 'FKRqJaFIko-5JWrc6s6ShUPZ';
     var oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 // generate a url that asks permissions for Google+ and Google Calendar scopes
     var scopes = [
-  'https://mail.google.com/'
+  'http://mail.google.com/',
+  'https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/plus.login',
+  'https://www.googleapis.com/plus/v1/people/me'
     ];
 
 var url = oauth2Client.generateAuthUrl({
@@ -45,42 +52,28 @@ var url = oauth2Client.generateAuthUrl({
 });
 
 
-app.get('/auth/google', passport.authenticate('google',  
-    { scope: ['https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/userinfo.email'] }),
-    function(req, res){} // this never gets called
-);
 
-app.get('/callback', function(req, res){  
-  var code = req.query.code;
-  oauth2Client.getToken(code, function(error, tokens) {
-    if (error) {res.send(error)};
-    var accessToken = tokens.access_token
-    //either save the token to a database, or send it back to the client to save.
-    //CloudBalance sends it back to the client as a json web token, and the client saves the token into sessionStorage
-  });
-});
 
 
 
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/gmail-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/plus.login'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'gmail-nodejs-quickstart.json';
 
-// Load client secrets from a local file.
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
-  if (err) {
-    console.log('Error loading client secret file: ' + err);
-    return;
-  }
-  // Authorize a client with the loaded credentials, then call the
-  // Gmail API.
-  authorize(JSON.parse(content), listLabels);
-});
+// // Load client secrets from a local file.
+// fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+//   if (err) {
+//     console.log('Error loading client secret file: ' + err);
+//     return;
+//   }
+//   // Authorize a client with the loaded credentials, then call the
+//   // Gmail API.
+//   authorize(JSON.parse(content), listLabels);
+// });
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -89,23 +82,10 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
-  var clientSecret = credentials.web.client_secret;
-  var clientId = credentials.web.client_id;
-  var redirectUrl = credentials.web.redirect_uris[0];
-  var auth = new googleAuth();
-  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, function(err, token) {
-    if (err) {
-      getNewToken(oauth2Client, callback);
-    } else {
-      oauth2Client.credentials = JSON.parse(token);
-      callback(oauth2Client);
-    }
-  });
-}
+// function authorize(credentials, callback) {
+  
+//   });
+// }
 
 /**
  * Get and store new token after prompting for user authorization, and then
@@ -120,13 +100,14 @@ function getNewToken(oauth2Client, callback) {
     access_type: 'offline',
     scope: SCOPES
   });
-  console.log('Authorize this app by visiting this url: ', authUrl);
-  var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  rl.question('Enter the code from that page here: ', function(code) {
-    rl.close();
+  return authUrl;
+  // console.log('Authorize this app by visiting this url: ', authUrl);
+  // var rl = readline.createInterface({
+  //   input: process.stdin,
+  //   output: process.stdout
+  // });
+  // rl.question('Enter the code from that page here: ', function(code) {
+  //   rl.close();
     oauth2Client.getToken(code, function(err, token) {
       if (err) {
         console.log('Error while trying to retrieve access token', err);
@@ -134,9 +115,10 @@ function getNewToken(oauth2Client, callback) {
       }
       oauth2Client.credentials = token;
       storeToken(token);
+
       callback(oauth2Client);
     });
-  });
+  //});
 }
 
 /**
@@ -185,7 +167,6 @@ function listLabels(auth) {
 }
 
 
-
 function isValid(str) { return /^[A-Za-z0-9 ]+$/.test(str); }
 String.prototype.contains = function(str) { return this.indexOf(str) != -1; };
 
@@ -200,6 +181,10 @@ var containsProfanity = function(text){
     }
     return returnVal;
 }
+
+
+
+
 /* Express server set up. */
 
 //The express server handles passing our content to the browser,
@@ -225,25 +210,202 @@ var containsProfanity = function(text){
         //By default, we forward the / path to index.html automatically.
     app.get( '/', function( req, res ){
         console.log('trying to load %s', __dirname + '/index.html');
+        // Load client secrets from a local file.
+
         res.sendfile( '/index.html' , { root:__dirname });
     });
+
+
+
+    app.get('/auth/google?', function(req, res){
+      fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+  if (err) {
+    console.log('Error loading client secret file: ' + err);
+    return;
+  }
+
+      var credentials = JSON.parse(content);
+  //authorize(JSON.parse(content), listLabels);
+  var clientSecret = credentials.web.client_secret;
+  var clientId = credentials.web.client_id;
+  var redirectUrl = credentials.web.redirect_uris[0];
+  var auth = new googleAuth();
+  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  var redURL = 0;
+      var url_parts = urllib.parse(req.url, true);
+      var query = url_parts.query;
+      console.log(query.code);
+      oauth2Client.getToken(query.code, function(err, token) {
+      if (err) {
+        console.log('Error while trying to retrieve access token', err);
+        return;
+      }
+      oauth2Client.credentials = token;
+      storeToken(token);
+
+      //listLabels(oauth2Client);
+      var gmail = google.gmail('v1');
+      var request = gmail.users.messages.list({
+    'userId': 'me',
+     'auth': oauth2Client,
+    'labelIds': 'INBOX',
+    'maxResults': 10
+  },function(err, response) {
+    if (err) {
+      console.log('The API returned an error: ' + err);
+      return;
+    }
+    var labels = response.messages;
+    console.log(labels);
+
+
+    passport.use(new GoogleStrategy({
+
+        clientID        : clientId,
+        clientSecret    : clientSecret
+
+    },
+    function(token, refreshToken, profile, done) {
+        console.log("hi");
+        // make the code asynchronous
+        // User.findOne won't fire until we have all our data back from Google
+        process.nextTick(function() {
+
+                    // set all of the relevant information
+            console.log(profile.emails[0].value); // pull the first email
+
+        });
+
+    }));
+
+//     var request = gapi.client.plus.people.get({
+//   'userId' : 'me'
+// });
+
+// request.execute(function(resp) {
+//   console.log('ID: ' + resp.id);
+//   console.log('Display Name: ' + resp.displayName);
+//   console.log('Image URL: ' + resp.image.url);
+//   console.log('Profile URL: ' + resp.url);
+// });
+
+//     var reqe = gmail.users.messages.get({
+//       'userId': 'me',
+//       'id':'me',
+//      'auth': oauth2Client,
+//     'labelIds': 'INBOX',
+//     'maxResults': 10
+//   },function(err, response) {
+//     if (err) {
+//       console.log('The API returned an error: ' + err);
+//       return;
+//     }
+
+    
+// });
+//     console.log(reqe);
+
+  });
+    
+
+    });
+  });
+    });
+
+
+
+     app.get('/authorize', function( req, res ){
+        fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+  if (err) {
+    console.log('Error loading client secret file: ' + err);
+    return;
+  }
+
+  // Authorize a client with the loaded credentials, then call the
+  // Gmail API.
+  var credentials = JSON.parse(content);
+  //authorize(JSON.parse(content), listLabels);
+  var clientSecret = credentials.web.client_secret;
+  var clientId = credentials.web.client_id;
+  var redirectUrl = credentials.web.redirect_uris[0];
+  var auth = new googleAuth();
+  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  var redURL = 0;
+
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, function(err, token) {
+    if (err) {
+      redURL = getNewToken(oauth2Client, listLabels);
+    } else {
+      oauth2Client.credentials = JSON.parse(token);
+      //listLabels(oauth2Client);
+      redURL = '/auth/google';
+    }
+
+
+
+  if(redURL != 0){
+    // request(redURL, function(error,response){
+    //   if(!error){
+      console.log(redURL+"   in /authorizer");
+       res.writeHead(302, {'location':redURL});
+       res.end();
+    // }
+    // });
+  }
+  });
+  });
+    });
+
+    
+
+  
+
+app.get('/callback', function(req, res){  
+  var code = req.query.code;
+  oauth2Client.getToken(code, function(error, tokens) {
+    if (error) {res.send(error)};
+    var accessToken = tokens.access_token
+    //either save the token to a database, or send it back to the client to save.
+    //CloudBalance sends it back to the client as a json web token, and the client saves the token into sessionStorage
+  });
+});
+
+// app.get('/auth/google', 
+//   passport.authenticate('google', { failureRedirect: '/login' }),
+//   function(req, res) {
+//     res.redirect('/');
+//   });
+
+// GET /auth/google/return
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  If authentication fails, the user will be redirected back to the
+//   login page.  Otherwise, the primary route function function will be called,
+//   which, in this example, will redirect the user to the home page.
+
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
 
 
         //This handler will listen for requests on /*, any file from the root of our server.
         //See expressjs documentation for more info on routing.
 
-    // app.get( '/*' , function( req, res, next ) {
+    app.get( '/*' , function( req, res, next ) {
 
-    //         //This is the current file they have requested
-    //     var file = req.params[0];
+            //This is the current file they have requested
+        var file = req.params[0];
 
-    //         //For debugging, we can track what files are requested.
-    //     if(verbose) console.log('\t :: Express :: file requested : ' + file);
+            //For debugging, we can track what files are requested.
+        if(verbose) console.log('\t :: Express :: file requested : ' + file);
 
-    //         //Send the requesting client the file.
-    //     res.sendfile( __dirname + '/' + file );
+            //Send the requesting client the file.
+        res.sendfile( __dirname + '/' + file );
 
-    // }); //app.get *
+    }); //app.get *
 
 
 /* Socket.IO server set up. */
@@ -275,6 +437,8 @@ var containsProfanity = function(text){
         //So we can send that client looking for a game to play,
         //as well as give that client a unique ID to use so we can
         //maintain the list if players.
+
+
     sio.sockets.on('connection', function (client) {
         client.auth = false;
 
@@ -292,6 +456,8 @@ var containsProfanity = function(text){
 
 
         });
+
+
         //new signup
         client.on('signup', function(data){
           console.log('\t signup attempt!');
