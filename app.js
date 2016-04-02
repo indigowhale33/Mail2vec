@@ -245,7 +245,7 @@ var containsProfanity = function(text){
 
       //listLabels(oauth2Client);
       var gmail = google.gmail('v1');
-      var request = gmail.users.messages.list({
+      var reque = gmail.users.messages.list({
     'userId': 'me',
      'auth': oauth2Client,
     'labelIds': 'INBOX',
@@ -258,25 +258,12 @@ var containsProfanity = function(text){
     var labels = response.messages;
     console.log(labels);
 
-
-    passport.use(new GoogleStrategy({
-
-        clientID        : clientId,
-        clientSecret    : clientSecret
-
-    },
-    function(token, refreshToken, profile, done) {
-        console.log("hi");
-        // make the code asynchronous
-        // User.findOne won't fire until we have all our data back from Google
-        process.nextTick(function() {
-
-                    // set all of the relevant information
-            console.log(profile.emails[0].value); // pull the first email
-
-        });
-
-    }));
+oauth2Client.request('googleapis.com/oauth2/v1/userinfo', function (error, response, body) {
+  console.log(response);
+  if (!error && response.statusCode == 200) {
+    console.log(body) // Show the HTML for the Google homepage. 
+  }
+})
 
 //     var request = gapi.client.plus.people.get({
 //   'userId' : 'me'
