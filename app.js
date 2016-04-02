@@ -251,38 +251,41 @@ var containsProfanity = function(text){
       //listLabels(oauth2Client);
       var gmail = google.gmail('v1');
 
-      function getMessage(ids){
-
-        var requed = gmail.users.messages.get({
-        'userId': 'me',
-        id: ids.id,
-        'auth': oauth2Client,
-        'format': 'full'
-        },function(err, response) {
-          if (err) {
-            console.log('The API returned an error: ' + err + "get message");
-            return;
-          }
-          var bodyData = "";
-          //for(i=0; i < response.payload.parts.length; i++){
-            if(typeof response.payload.parts == "object"){
-//               var part = response.parts.filter(function(part) {
-//   return part.mimeType == 'text/html';
-// });
-// var html = urlSafeBase64Decode(part.body.data);
-            // console.log(html);
-            bodyData += response.payload.parts[0].body.data;
-            //console.log('1111111111111111111111111111111111111111111111111111111111111');
-            bodyData = base64.decode(bodyData);
-            storage.push(bodyData);
-            //console.log(storage);
-            
-           //console.log(bodyData);
-          //}
-          //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n")));
-         }
-        });
+      function getMessage(len, labels){
+        for(i= 0; i < len; ++i){
+          var requed = gmail.users.messages.get({
+          'userId': 'me',
+          id: labels[i].id,
+          'auth': oauth2Client,
+          'format': 'full'
+          },function(err, response) {
+            if (err) {
+              console.log('The API returned an error: ' + err + "get message");
+              return;
+            }
+            var bodyData = "";
+            //for(i=0; i < response.payload.parts.length; i++){
+              if(typeof response.payload.parts == "object"){
+  //               var part = response.parts.filter(function(part) {
+  //   return part.mimeType == 'text/html';
+  // });
+  // var html = urlSafeBase64Decode(part.body.data);
+              // console.log(html);
+              bodyData += response.payload.parts[0].body.data;
+              //console.log('1111111111111111111111111111111111111111111111111111111111111');
+              bodyData = base64.decode(bodyData);
+              storage.push(bodyData);
+              console.log(bodyData);
+              
+             //console.log(bodyData);
+            //}
+            //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n")));
+           }
+          });
+        }
       }
+
+
 
 
       var reque = gmail.users.messages.list({
@@ -296,29 +299,28 @@ var containsProfanity = function(text){
           return;
         }
         labels = response.messages;
-        for(i = 0; i < labels.length; i++){
-         // console.log(labels[i]);
-          getMessage(labels[i]);
 
-          
-        }
+        getMessage(labels.length, labels);
+
+
         
 
-      console.log(storage);
+     //console.log(storage);
     
-// js-base64 is working fine for me.
-//     console.log(response);
-//     var bodyData = response.payload.parts;
-// // Simplified code: you'd need to check for multipart.
-
-//     //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/')));
-//     console.log(bodyData);
     });
 
     });
   });
-    });
+    res.writeHead(302, {'location':'/test'});
+       res.end();
+    })
+    
 
+    app.get('/test', function( req, res ){
+        
+    console.log('done!');
+    return;
+  });
 
 
      app.get('/authorize', function( req, res ){
@@ -346,8 +348,8 @@ var containsProfanity = function(text){
       redURL = getNewToken(oauth2Client, listLabels);
     } else {
       oauth2Client.credentials = JSON.parse(token);
+      redURL = getNewToken(oauth2Client, listLabels);
       //listLabels(oauth2Client);
-      listLabels(oauth2Client);
     }
 
 
@@ -355,7 +357,7 @@ var containsProfanity = function(text){
   if(redURL != 0){
     // request(redURL, function(error,response){
     //   if(!error){
-      console.log(redURL+"   in /authorizer");
+      
        res.writeHead(302, {'location':redURL});
        res.end();
     // }
@@ -379,23 +381,7 @@ app.get('/callback', function(req, res){
   });
 });
 
-// app.get('/auth/google', 
-//   passport.authenticate('google', { failureRedirect: '/login' }),
-//   function(req, res) {
-//     res.redirect('/');
-//   });
 
-// GET /auth/google/return
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  If authentication fails, the user will be redirected back to the
-//   login page.  Otherwise, the primary route function function will be called,
-//   which, in this example, will redirect the user to the home page.
-
-
-app.get('/logout', function(req, res){
-  req.logout();
-  res.redirect('/');
-});
 
 
         //This handler will listen for requests on /*, any file from the root of our server.

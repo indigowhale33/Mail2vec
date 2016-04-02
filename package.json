@@ -19,7 +19,8 @@
     "iced-coffee-script": "~108.0.9",
     "passport-google-oauth": "~1.0.0",
     "replace": "~0.3.0",
-    "promise": "~7.1.1"
+    "promise": "~7.1.1",
+    "q": "~1.4.1"
   },
   "engine": {
     "node": "0.10.x"
