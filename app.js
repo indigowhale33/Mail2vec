@@ -23,7 +23,7 @@
         query = new Parse.Query(Parse.User);
         var urllib = require('url');
 
-
+    var replace = require('replace');
     var google = require('googleapis');
     var coffeescript = require('iced-coffee-script/register');
     var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
@@ -34,6 +34,7 @@
   var readline = require('readline');
   var base64 = require('js-base64').Base64;
   var googleAuth = require('google-auth-library');
+  var Promise = require('promise');
     //oogle.options({ auth: oauth2Client });
     app.use(express.bodyParser());
     var REDIRECT_URL = 'http://www.mailcat.com/oauth2callback&';
@@ -46,6 +47,8 @@
   'https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/plus.login',
   'https://www.googleapis.com/plus/v1/people/me'
     ];
+
+    var storage = [];
 
 var url = oauth2Client.generateAuthUrl({
   access_type: 'offline', // 'online' (default) or 'offline' (gets refresh_token)
@@ -248,38 +251,68 @@ var containsProfanity = function(text){
       //listLabels(oauth2Client);
       var gmail = google.gmail('v1');
 
+      function getMessage(ids){
+
+        var requed = gmail.users.messages.get({
+        'userId': 'me',
+        id: ids.id,
+        'auth': oauth2Client,
+        'format': 'full'
+        },function(err, response) {
+          if (err) {
+            console.log('The API returned an error: ' + err + "get message");
+            return;
+          }
+          var bodyData = "";
+          //for(i=0; i < response.payload.parts.length; i++){
+            if(typeof response.payload.parts == "object"){
+//               var part = response.parts.filter(function(part) {
+//   return part.mimeType == 'text/html';
+// });
+// var html = urlSafeBase64Decode(part.body.data);
+            // console.log(html);
+            bodyData += response.payload.parts[0].body.data;
+            //console.log('1111111111111111111111111111111111111111111111111111111111111');
+            bodyData = base64.decode(bodyData);
+            storage.push(bodyData);
+            //console.log(storage);
+            
+           //console.log(bodyData);
+          //}
+          //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n")));
+         }
+        });
+      }
+
 
       var reque = gmail.users.messages.list({
           'userId': 'me',
           'auth': oauth2Client,
           'labelIds': 'INBOX',
-          'maxResults': 10
+          'maxResults': 100
         },function(err, response) {
         if (err) {
           console.log('The API returned an error: ' + err + "message list");
           return;
         }
         labels = response.messages;
-        console.log(labels);
-      });
+        for(i = 0; i < labels.length; i++){
+         // console.log(labels[i]);
+          getMessage(labels[i]);
 
-    var requed = gmail.users.messages.get({
-    'userId': 'me',
-    id: '153d52b7cdea8636',
-    'auth': oauth2Client
-  },function(err, response) {
-    if (err) {
-      console.log('The API returned an error: ' + err + "get message");
-      return;
-    }
+          
+        }
+        
+
+      console.log(storage);
     
 // js-base64 is working fine for me.
-    console.log(response);
-    var bodyData = response.payload.parts;
-// Simplified code: you'd need to check for multipart.
+//     console.log(response);
+//     var bodyData = response.payload.parts;
+// // Simplified code: you'd need to check for multipart.
 
-    //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/')));
-    console.log(bodyData);
+//     //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/')));
+//     console.log(bodyData);
     });
 
     });
