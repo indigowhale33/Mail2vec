@@ -32,6 +32,7 @@
     var request = require('request');
     var fs = require('fs');
   var readline = require('readline');
+  var base64 = require('js-base64').Base64;
   var googleAuth = require('google-auth-library');
     //oogle.options({ auth: oauth2Client });
     app.use(express.bodyParser());
@@ -150,7 +151,7 @@ function listLabels(auth) {
     userId: 'me',
   }, function(err, response) {
     if (err) {
-      console.log('The API returned an error: ' + err);
+      console.log('The API returned an error: ' + err + 'listlabels');
       return;
     }
     var labels = response.labels;
@@ -232,6 +233,7 @@ var containsProfanity = function(text){
   var auth = new googleAuth();
   var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
   var redURL = 0;
+  var labels;
       var url_parts = urllib.parse(req.url, true);
       var query = url_parts.query;
       console.log(query.code);
@@ -245,55 +247,40 @@ var containsProfanity = function(text){
 
       //listLabels(oauth2Client);
       var gmail = google.gmail('v1');
+
+
       var reque = gmail.users.messages.list({
+          'userId': 'me',
+          'auth': oauth2Client,
+          'labelIds': 'INBOX',
+          'maxResults': 10
+        },function(err, response) {
+        if (err) {
+          console.log('The API returned an error: ' + err + "message list");
+          return;
+        }
+        labels = response.messages;
+        console.log(labels);
+      });
+
+    var requed = gmail.users.messages.get({
     'userId': 'me',
-     'auth': oauth2Client,
-    'labelIds': 'INBOX',
-    'maxResults': 10
+    id: '153d52b7cdea8636',
+    'auth': oauth2Client
   },function(err, response) {
     if (err) {
-      console.log('The API returned an error: ' + err);
+      console.log('The API returned an error: ' + err + "get message");
       return;
     }
-    var labels = response.messages;
-    console.log(labels);
-
-oauth2Client.request('googleapis.com/oauth2/v1/userinfo', function (error, response, body) {
-  console.log(response);
-  if (!error && response.statusCode == 200) {
-    console.log(body) // Show the HTML for the Google homepage. 
-  }
-})
-
-//     var request = gapi.client.plus.people.get({
-//   'userId' : 'me'
-// });
-
-// request.execute(function(resp) {
-//   console.log('ID: ' + resp.id);
-//   console.log('Display Name: ' + resp.displayName);
-//   console.log('Image URL: ' + resp.image.url);
-//   console.log('Profile URL: ' + resp.url);
-// });
-
-//     var reqe = gmail.users.messages.get({
-//       'userId': 'me',
-//       'id':'me',
-//      'auth': oauth2Client,
-//     'labelIds': 'INBOX',
-//     'maxResults': 10
-//   },function(err, response) {
-//     if (err) {
-//       console.log('The API returned an error: ' + err);
-//       return;
-//     }
-
     
-// });
-//     console.log(reqe);
+// js-base64 is working fine for me.
+    console.log(response);
+    var bodyData = response.payload.parts;
+// Simplified code: you'd need to check for multipart.
 
-  });
-    
+    //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/')));
+    console.log(bodyData);
+    });
 
     });
   });
@@ -327,7 +314,7 @@ oauth2Client.request('googleapis.com/oauth2/v1/userinfo', function (error, respo
     } else {
       oauth2Client.credentials = JSON.parse(token);
       //listLabels(oauth2Client);
-      redURL = '/auth/google';
+      listLabels(oauth2Client);
     }
 
 
