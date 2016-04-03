@@ -19,7 +19,7 @@ import string
 import json
 import os
 
-THRESHOLD_VAL = 0.24
+THRESHOLD_VAL = 0.26
 
 class NLProcessor(object):
     def __init__(self):
@@ -35,19 +35,23 @@ class NLProcessor(object):
                 mailString = mailString + ch
                     
         mailString = mailString.split()
-        mailString = ' '.join(word for word in mailString if word in self.model)
+        mailString = ' '.join(word for word in mailString if word in self.model and len(word) > 1 and word != 'div')
         return mailString.split()
 
     def categorize(self, emailID, category, bodyData):
         returnArray = []
+        #coeffArray = []
         bodyData = self.verifyString(bodyData)
-        simCoeff = self.model.n_similarity(category.split(), bodyData)
+        print('Categories: ' + str(category))
+        simCoeff = self.model.n_similarity(bodyData, category.split())
         print('simCoeff: ' + str(simCoeff))
+        print(bodyData)
         if simCoeff > THRESHOLD_VAL:
             returnArray.append(emailID)
+            #coeffArray.append(simCoeff)
             if len(returnArray) == 25:
-                return ' '.join(returnArray)
-        return ' '.join(returnArray)
+                return returnArray
+        return returnArray
 
 s = zerorpc.Server(NLProcessor())
 s.bind("tcp://0.0.0.0:4242")
