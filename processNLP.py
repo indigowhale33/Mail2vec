@@ -37,10 +37,10 @@ class NLProcessor(object):
             data = json.load(data_file)
         for email in data:
             print(category.split())
-            simCoeff = self.model.n_similarity(category.split(), self.verifyString(data.get(email)))
+            simCoeff = self.model.n_similarity(category.split(), self.verifyString(email.get('value')))
             print('simCoeff: ' + str(simCoeff))
             if simCoeff > THRESHOLD_VAL:
-                returnArray.append(email)
+                returnArray.append(email.get('key'))
                 if len(returnArray) == 25:
                     return ' '.join(returnArray)
 

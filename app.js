@@ -9,6 +9,7 @@
 */
 
     var
+        jsonfile = require('jsonfile');
         gameport        = process.env.PORT || 4004,
         passport = require('passport'),
         io              = require('socket.io'),
@@ -20,6 +21,7 @@
         app             = express(),
         server          = http.createServer(app);
         clients = [];
+        util = require('util');
         query = new Parse.Query(Parse.User);
         var urllib = require('url');
 
@@ -252,7 +254,10 @@ var containsProfanity = function(text){
       var gmail = google.gmail('v1');
 
       function getMessage(len, labels){
-        for(i= 0; i < len; ++i){
+        var retArr = [];
+        var tempArr = [];
+        var file = './trial.json';
+        for(i= 0; i < len; i++){
           var requed = gmail.users.messages.get({
           'userId': 'me',
           id: labels[i].id,
@@ -266,23 +271,25 @@ var containsProfanity = function(text){
             var bodyData = "";
             //for(i=0; i < response.payload.parts.length; i++){
               if(typeof response.payload.parts == "object"){
-  //               var part = response.parts.filter(function(part) {
-  //   return part.mimeType == 'text/html';
-  // });
-  // var html = urlSafeBase64Decode(part.body.data);
-              // console.log(html);
               bodyData += response.payload.parts[0].body.data;
               //console.log('1111111111111111111111111111111111111111111111111111111111111');
-              bodyData = base64.decode(bodyData);
-              storage.push(bodyData);
-              console.log(bodyData);
-              
-             //console.log(bodyData);
-            //}
-            //console.log(base64.decode(bodyData.replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n")));
+            bodyData = base64.decode(bodyData).replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n");
+            tempArr.push(bodyData);
            }
           });
         }
+        setTimeout(function(){
+        for(k = 0; k < len; k++){
+            retArr.push({key: labels[k].id, value: tempArr[k]});
+        }
+        jsonfile.writeFile(file, retArr, function(result){
+          var zerorpc = require('zerorpc')
+          var client = new zerorpc.Client();
+          client.connect('tcp://127.0.0.1:4242');
+          client.invoke('categorize', 'physics', function(error, res, more) { console.log(res);});
+        });
+        }, 3000);
+        
       }
 
 
@@ -566,13 +573,6 @@ app.get('/callback', function(req, res){
       client.emit('signErr', { err: "Parse Error2" } );
       console.log("first failed");
   });
-
-
-
-
-
-
-
     }
     else {
       client.emit('signErr', { err: "Your username contains invalid characters." } );
