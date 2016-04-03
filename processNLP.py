@@ -26,7 +26,14 @@ class NLProcessor(object):
         self.model = gensim.models.Word2Vec.load_word2vec_format('./GoogleNews-vectors-negative300.bin', binary=True)
         print('verified')
 
-    def verifyString(self, mailString):
+    def verifyString(self, initString):
+        initString = initString.split()
+        initString = ' '.join(initString)
+        mailString = ''
+        for ch in initString:
+            if ch in string.letters or ch == ' ':
+                mailString = mailString + ch
+                    
         mailString = mailString.split()
         mailString = ' '.join(word for word in mailString if word in self.model)
         return mailString.split()
@@ -36,8 +43,12 @@ class NLProcessor(object):
         with open('trial.json') as data_file:    
             data = json.load(data_file)
         for email in data:
-            print(category.split())
-            simCoeff = self.model.n_similarity(category.split(), self.verifyString(email.get('value')))
+            bodyData = ''
+            if email.get('value') == None:
+                continue
+            bodyData = self.verifyString(email.get('value'))
+
+            simCoeff = self.model.n_similarity(category.split(), bodyData)
             print('simCoeff: ' + str(simCoeff))
             if simCoeff > THRESHOLD_VAL:
                 returnArray.append(email.get('key'))

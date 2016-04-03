@@ -253,9 +253,9 @@ var containsProfanity = function(text){
       //listLabels(oauth2Client);
       var gmail = google.gmail('v1');
 
-      function getMessage(len, labels){
+      function getMessage(len, labels, categories){
+        var nonce = 0;
         var retArr = [];
-        var tempArr = [];
         var file = './trial.json';
         for(i= 0; i < len; i++){
           var requed = gmail.users.messages.get({
@@ -273,27 +273,25 @@ var containsProfanity = function(text){
               if(typeof response.payload.parts == "object"){
               bodyData += response.payload.parts[0].body.data;
               //console.log('1111111111111111111111111111111111111111111111111111111111111');
-            bodyData = base64.decode(bodyData).replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n");
-            tempArr.push(bodyData);
+            //bodyData = base64.decode(bodyData).replace(/-/g, '+').replace(/_/g, '/').replace(/<br>/gi, "\n");
+            bodyData = base64.decode(bodyData);
+            bodyData = bodyData.replace(/[^a-z+]+/gi, ' ');
+            retArr.push({key: response.id, value: bodyData});
+            nonce = nonce + 1;
+            if(nonce == len){
+                jsonfile.writeFile(file, retArr, function(result){
+                var zerorpc = require('zerorpc')
+                var client = new zerorpc.Client();
+                client.connect('tcp://127.0.0.1:4242');
+                client.invoke('categorize', categories, function(error, res, more) { 
+                    res = res.split(' ')
+                });
+        });
+           }
            }
           });
         }
-        setTimeout(function(){
-        for(k = 0; k < len; k++){
-            retArr.push({key: labels[k].id, value: tempArr[k]});
-        }
-        jsonfile.writeFile(file, retArr, function(result){
-          var zerorpc = require('zerorpc')
-          var client = new zerorpc.Client();
-          client.connect('tcp://127.0.0.1:4242');
-          client.invoke('categorize', 'physics', function(error, res, more) { console.log(res);});
-        });
-        }, 3000);
-        
       }
-
-
-
 
       var reque = gmail.users.messages.list({
           'userId': 'me',
@@ -307,7 +305,7 @@ var containsProfanity = function(text){
         }
         labels = response.messages;
 
-        getMessage(labels.length, labels);
+        getMessage(labels.length, labels, 'sports');
 
 
         
