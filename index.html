@@ -1,233 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<head>
-        
-		<title>projectzero</title>
-		<script src="//www.parsecdn.com/js/parse-1.6.12.min.js"></script>
-			<!-- Load style sheet -->
-
-	<!-- Library code -->
-
-		 	<!-- Load socket.io client side contents. -->
-		<script src="/socket.io/socket.io.js"></script>
-
-
-	 		<!-- Load the GUI rendering library code. -->
-		<script type="text/javascript" src="lib/dat.gui.min.js"></script>
-			<!-- Load the keyboard specific code -->
-		<script type="text/javascript" src="lib/keyboard.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=OnLoadCallback"></script>
-	<!-- Game code -->
-
-	 		<!-- Load the common game code. -->
-		<!-- script type="text/javascript" src="game.core.js"></script>
-			<!-- Finally, Load the game client code. -->
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <head>
+    <title>Gmail API demo</title>
+    <link rel="stylesheet" href="landing.css">
+    <meta charset="UTF-8">
     <style>
-      iframe {
-        width: 100%;
-        border: 0;
-        min-height: 80%;
-        height: 600px;
-        display: flex;
-      }
+      .hidden{ display: none; }
     </style>
-
-	</head>
-
-	<body>
-    
-<script type="text/javascript">
-//This is all that needs
-var socket = io.connect('/');
-//Now we can listen for that event
-socket.on('onconnected', function( data ) {
-//Note that the data is the object we sent from the server, as is. So we can assume its id exists.
-console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
-});
-</script>
-
-
-	<div class="container">
-      <img src="assets/sone.png" style="float:left; padding-top: 15px; padding-bottom: 20px;"> </img>
-      <br>
-<div class="col-lg-6" style="float:right; padding-top:20px; ">
-    <div class="input-group">
-      <input type="text" class="form-control" id="theebox" placeholder="Enter your category...">
-      <span class="input-group-btn">
-        <button class="btn btn-default" type="button" onclick="myFunction()">Go!</button>
-      </span>
-    </div><!-- /input-group -->
-  </div>
-  <br>
-  <br>
-      <button id="authorize-button" class="btn btn-primary" style="display: none;">Authorize</button>
-
-      <table class="table table-striped table-inbox" style="display: none;">
-        <thead>
-          <tr>
-            <th>From</th>
-            <th>Subject</th>
-            <th>Date/Time</th>
-          </tr>
-        </thead>
-        <tbody id='tabbody'></tbody>
-      </table>
+  </head>
+  <body>
+   <img src="assets/bestlogona.png" style="padding-top: 10px"></img>
+   <div id="centerRight">
+   <center>
+   NLP Based Email Categorizer
+   <p>
+   Runs on word2vec and uses pre-trained vectors trained on part of Google News dataset (about 100 billion words!)
+   </center>
+    <div class="button_base b03_skewed_slide_in" onclick="location.href='client.html';">
+        <div>Test it out!</div>
+        <div></div>
+        <div>Test it out!</div>
     </div>
 
-    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    
-
-    <script type="text/javascript">
-    socket.on('getID', function(data){
-    if(data.emailID != '')
-    {
-        getMessage(data.emailID);
-    }
-    });
-    function myFunction(){
-      document.getElementById('tabbody').innerHTML = "";
-      socket.emit('enterCat', {'cat': document.getElementById("theebox").value});
-      displayInbox();
-    }
-
-      var clientId = '116031080381-i1e93rrquo61l4btprtl6209ekrsk65i.apps.googleusercontent.com';
-      var apiKey = 'AIzaSyCXmP31ht1q49RVfLti1cT0eFHQjIg0PNo';
-      var scopes = 'https://www.googleapis.com/auth/gmail.readonly';
-function handleClientLoad() {
-        gapi.client.setApiKey(apiKey);
-        window.setTimeout(checkAuth, 1);
-      }
-      function checkAuth() {
-        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
-      }
-      function handleAuthResult(authResult) {        
-        if(authResult && !authResult.error) 
-        {
-          loadGmailApi();
-          $('#authorize-button').remove();
-          $('.table-inbox').show();
-        } 
-        else
-        {
-          $('#authorize-button').show();
-          $('#authorize-button').on('click', function(){
-            handleAuthClick();
-          });
-        }
-      }
-      function handleAuthClick() {
-        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
-        return false;
-      }
-      function loadGmailApi() {
-        gapi.client.load('gmail', 'v1', displayInbox);
-      }
-
-    function getMessage(messageId) {
-    var request = gapi.client.gmail.users.messages.get({
-        'userId': 'me',
-        'id': messageId
-      });
-      request.execute(appendMessageRow);
-      }
-
-      function displayInbox() {
-        var request = gapi.client.gmail.users.messages.list({
-          'userId': 'me',
-          'labelIds': 'INBOX'
-        });
-        request.execute(function(response) {          
-          $.each(response.messages, function() {
-            var messageRequest = gapi.client.gmail.users.messages.get({
-              'userId': 'me',
-              'id': this.id
-            });
-            messageRequest.execute(addMessageJSON);
-          });
-        });
-      }
-      function addMessageJSON(message) {
-        
-        var returnTxt;
-        if(!(message === undefined || message === null))
-        {
-          returnTxt= getBody(message.payload.parts[0]);
-          socket.emit('oneMail', {'id': message.id, 'body': returnTxt})
-        }
-        //console.log(message.id);
-      }
-      function appendMessageRow(message) {
-        $('.table-inbox tbody').append(
-          '<tr>\n\
-            <td>'+getHeader(message.payload.headers, 'From')+'</td>\n\
-            <td><a href="#message-modal-'+message.id+'" data-toggle="modal" id="message-link-'+message.id+'">'+getHeader(message.payload.headers, 'Subject')+'</a></td>\n\
-            <td>'+getHeader(message.payload.headers, 'Date')+'</td>\n\
-          </tr>');
-        $('body').append(
-          '<div class="modal fade" id="message-modal-'+message.id+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">\n\
-            <div class="modal-dialog modal-lg">\n\
-              <div class="modal-content">\n\
-                <div class="modal-header">\n\
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n\
-                  <h4 class="modal-title" id="myModalLabel">'+getHeader(message.payload.headers, 'Subject')+'</h4>\n\
-                </div>\n\
-                <div class="modal-body">\n\
-                  <iframe id="message-iframe-'+message.id+'" srcdoc="<p>Loading...</p>"></iframe>\n\
-                </div>\n\
-              </div>\n\
-            </div>\n\
-          </div>');
-        $('#message-link-'+message.id).on('click', function(){
-          //http://stackoverflow.com/questions/997986/write-elements-into-a-child-iframe-using-javascript-or-jquery
-          var ifrm = $('#message-iframe-'+message.id)[0].contentWindow.document;
-          $('body', ifrm).html(getBody(message.payload));
-        });
-      }
-      function getHeader(headers, index) {
-        var header = '';
-        
-        $.each(headers, function(){
-          if(this.name === index)
-            header = this.value;
-        });
-        return header;
-      }
-      function getBody(message) {
-        var encodedBody = '';
-        if(typeof message.parts === 'undefined')
-        {
-          encodedBody = message.body.data;
-        }
-        else
-        {
-          encodedBody = getHTMLPart(message.parts);
-        }
-        encodedBody = encodedBody.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
-        return decodeURIComponent(escape(window.atob(encodedBody)));
-      }
-      function getHTMLPart(arr) {
-        for(var x = 0; x <= arr.length; x++)
-        {
-          if(typeof arr[x].parts === 'undefined')
-          {
-            if(arr[x].mimeType === 'text/html')
-            {
-              return arr[x].body.data;
-            }
-          }
-          else
-          {
-            return getHTMLPart(arr[x].parts);
-          }
-        }
-        return '';
-      }
-    </script>
-
-    <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
-	</body>
-
+   </div>
+  </body>
 </html>
