@@ -1,31 +1,6 @@
-Realtime Multiplayer In HTML5
-=============================
+Mail2vec is an app designed to automatically sort emails into user-chosen categories using natural language processing. Users authenticate a Gmail account to allow their emails to be downloaded. They are then directed to type a category name in a text box to start sorting their emails. The emails are categorized in accordance with connections between the name of each category and the content of the email. The Gensim library's Word2Vec utility determines how a single word is related to others based on the words that are expected to be adjacent to it in a sentence. This gives rise to the discovery of patterns and trends that may not be observed through traditional searching and categorization efforts.
 
-Read the article here : 
-http://buildnewgames.com/real-time-multiplayer/
+We implemented Mail2vec using a Node.js backend. The Gmail API is used to dynamically load emails client side, which are sent to the Node.js server. Since the libraries we wished to use were implemented in Python, we created a Python server to perform the intensive work of processing and categorizing emails. The Python server receives the emails and relevant data before sending the results to Node.js, which communicates the results back to the client side where the relevant emails are loaded onto the page.
 
-View the demo here :
-http://underscorediscovery.aws.af.cm/?debug
-
-An example using node.js, socket.io and HTML5 Canvas to explain and demonstrate realtime multiplayer games in the browser.
-
-## Getting started (Using npm package.json)
-* Get node.js
-* run `npm install` inside the cloned folder
-* run `node app.js` inside the cloned folder
-* Visit http://127.0.0.1:4004/?debug
-
-## Getting started (Manual install)
-
-* Get node.js
-* Install socket.io `npm install socket.io`
-* Install node-udid `npm install node-uuid`
-* Install express `npm install express`
-* Run `node app.js` inside the cloned folder
-* Visit http://127.0.0.1:4004/?debug
-
-## License
-
-MIT Licensed. 
-See LICENSE if required.
-
+This app requires the Google News pretrained Word2Vec model, which was obtained here: https://github.com/3Top/word2vec-api#where-to-get-a-pretrained-models
+The file should be placed in the Mail2vec folder.
