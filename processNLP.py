@@ -38,27 +38,16 @@ class NLProcessor(object):
         mailString = ' '.join(word for word in mailString if word in self.model)
         return mailString.split()
 
-    def categorize(self, category):
+    def categorize(self, emailID, category, bodyData):
         returnArray = []
-        with open('trial.json') as data_file:    
-            data = json.load(data_file)
-        for email in data:
-            bodyData = ''
-            if email.get('value') == None:
-                continue
-            bodyData = self.verifyString(email.get('value'))
-
-            simCoeff = self.model.n_similarity(category.split(), bodyData)
-            print('simCoeff: ' + str(simCoeff))
-            if simCoeff > THRESHOLD_VAL:
-                returnArray.append(email.get('key'))
-                if len(returnArray) == 25:
-                    return ' '.join(returnArray)
-
-
+        bodyData = self.verifyString(bodyData)
+        simCoeff = self.model.n_similarity(category.split(), bodyData)
+        print('simCoeff: ' + str(simCoeff))
+        if simCoeff > THRESHOLD_VAL:
+            returnArray.append(emailID)
+            if len(returnArray) == 25:
+                return ' '.join(returnArray)
         return ' '.join(returnArray)
-
-
 
 s = zerorpc.Server(NLProcessor())
 s.bind("tcp://0.0.0.0:4242")
